@@ -441,6 +441,13 @@ body {
 }
 .game-header__score strong { color: var(--color-accent); }
 
+.game-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  flex: 1;
+}
+
 .game-main {
   flex: 1;
   display: flex;
@@ -450,6 +457,100 @@ body {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+}
+
+.game-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding: 24px 16px 24px 0;
+  position: sticky;
+  top: 0;
+}
+
+/* ── Tile Value Radar ─────────────────────────────────────────────────────── */
+.tile-radar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tile-radar__heading {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tile-radar__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-row__symbol {
+  font-size: 1rem;
+  font-weight: 700;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.radar-row__track {
+  flex: 1;
+  height: 6px;
+  background: var(--color-surface-2);
+  border-radius: 999px;
+  position: relative;
+  overflow: visible;
+}
+
+.radar-row__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.4s ease;
+  position: relative;
+}
+
+.radar-row__midline {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 1px;
+  height: 12px;
+  background: var(--color-border);
+  transform: translateX(-50%);
+}
+
+.radar-row__val {
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.radar-row--danger .radar-row__symbol {
+  animation: dangerPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dangerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
 }
 
 .current-hand {
@@ -583,6 +684,10 @@ body {
 .game-over-card__actions .btn { min-width: 120px; justify-content: center; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .game-sidebar { display: none; }
+}
+
 @media (max-width: 600px) {
   .tile { width: 64px; height: 86px; }
   .tile__symbol { font-size: 1.6rem; }

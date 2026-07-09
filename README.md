@@ -34,22 +34,23 @@ npm run preview
 ```
 src/
 ├── engine/
-│   ├── tiles.js          # Tile creation, deck, shuffling, pure helpers
-│   ├── gameEngine.js     # Pure state transitions (initGameState, placeBet)
-│   └── leaderboard.js    # localStorage-backed leaderboard
+│   ├── tiles.js              # Tile creation, deck, shuffling, pure helpers
+│   ├── gameEngine.js         # Pure state transitions (initGameState, placeBet)
+│   └── leaderboard.js        # localStorage-backed leaderboard
 ├── context/
-│   └── GameContext.jsx   # useReducer + Context — single source of truth
+│   └── GameContext.jsx       # useReducer + Context — single source of truth
 ├── components/
-│   ├── Tile.jsx          # Individual tile renderer
-│   ├── HandDisplay.jsx   # Current hand + history entry
+│   ├── Tile.jsx              # Individual tile renderer
+│   ├── HandDisplay.jsx       # Current hand + history entry
 │   ├── BettingControls.jsx
-│   └── DeckInfo.jsx      # Draw/Discard/Reshuffle counts
+│   ├── DeckInfo.jsx          # Draw/Discard/Reshuffle counts
+│   └── TileValueRadar.jsx    # Live Dragon/Wind health bars
 ├── views/
 │   ├── LandingPage.jsx
 │   ├── GameScreen.jsx
 │   └── GameOverScreen.jsx
 └── styles/
-    └── index.css         # Design tokens + all component styles
+    └── index.css             # Design tokens + all component styles
 ```
 
 **Key design decisions for extensibility:**
@@ -61,14 +62,31 @@ src/
 ## AI Utilization
 
 **Handwritten:**
-- Game logic architecture (`gameEngine.js`, `leaderboard.js`) — state machine design, edge cases for reshuffle/game-over triggers
+- `checkTileValuesGameOver` in `gameEngine.js` — the global tile value registry approach and game-over conditions (tile hits 0 or 10) were designed and reasoned through manually, including the edge case that scaling must check the updated registry after each round, not individual tile objects
+- `TileValueRadar.jsx` — the health bar component including color thresholds, danger pulse animation, and the midline marker concept were implemented by hand
 - Component API design (prop interfaces, context shape)
 - CSS design system (color tokens, animations, responsive breakpoints)
 
 **AI-assisted (Claude Code):**
 - Boilerplate scaffolding and file structure setup
 - CSS property lookups and cross-browser compatibility checks
-- Iterative bug fixing during implementation
+- Iterative debugging during implementation
+
+## Scaling to Production
+
+The game engine runs entirely client-side — zero server load per active player during gameplay. The only backend touchpoint is the leaderboard (on game start and game over).
+
+![AWS Architecture](public/aws-arch.png)
+
+| Layer | Service | Purpose |
+|---|---|---|
+| CDN | AWS CloudFront | Serves React bundle from S3, caches leaderboard GET at edge (30s TTL) |
+| Static hosting | S3 | React production build |
+| API | API Gateway + Lambda | Stateless score submission and leaderboard reads |
+| Leaderboard | ElastiCache (Redis) | Sorted set — `ZADD` / `ZRANGE`, O(log N) |
+| Sessions | DynamoDB | Optional game state persistence, TTL 24h |
+
+Swapping `leaderboard.js` from `localStorage` to `fetch('/api/scores')` is the only code change required. The engine, state, and all components are untouched.
 
 ## Tech Stack
 
